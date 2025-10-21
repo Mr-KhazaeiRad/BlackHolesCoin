@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hamster Clicker Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            box-sizing: border-box;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+        }
+        
+        @keyframes coinFloat {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-50px) scale(1.2); opacity: 0; }
+        }
+        
+        .bounce-click { animation: bounce 0.1s ease-in-out; }
+        .coin-float { animation: coinFloat 1s ease-out forwards; }
+        
+        .hamster-glow {
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-3px);
+            transition: all 0.3s ease;
+        }
+        
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(17, 24, 39, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(75, 85, 99, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 min-h-full text-white font-sans pb-20">
+    <div class="container mx-auto px-4 py-6 max-w-md">
+        <!-- Header -->
+        <header class="text-center mb-6">
+            <h1 class="text-2xl font-bold text-violet-400 mb-4">🐹 Hamster Clicker</h1>
+            <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
+                <div class="text-3xl font-bold text-white" id="coinCount">0</div>
+                <div class="text-sm text-gray-400">سکه‌ها</div>
+                <div class="text-sm text-violet-400 mt-1" id="coinsPerSecond">0 سکه/ثانیه</div>
+            </div>
+        </header>
+
+
+
+        <!-- Game Tab -->
+        <div id="gameTab" class="tab-content">
+            <!-- Hamster -->
+            <div class="text-center mb-8 relative">
+                <div class="relative inline-block">
+                    <div id="hamster" class="text-8xl cursor-pointer select-none hamster-glow rounded-full p-6 bg-gray-800 border-2 border-violet-500 transition-all duration-100">
+                        🐹
+                    </div>
+                    <div id="floatingCoins" class="absolute inset-0 pointer-events-none"></div>
+                </div>
+                <div class="mt-4">
+                    <div class="text-lg text-gray-300" id="clickPower">قدرت کلیک: 1</div>
+                </div>
+            </div>
+
+
+        </div>
+
+        <!-- Shop Tab -->
+        <div id="shopTab" class="tab-content hidden">
+            <h2 class="text-xl font-bold text-center mb-6 text-violet-400">🛒 فروشگاه</h2>
+            
+            <div class="space-y-3">
+                <div class="bg-gray-800 rounded-lg p-4 flex items-center justify-between border border-gray-700">
+                    <div class="flex items-center">
+                        <div class="text-2xl ml-3">👆</div>
+                        <div>
+                            <div class="font-medium text-white">ارتقای کلیک</div>
+                            <div class="text-xs text-gray-400">قدرت کلیک +1</div>
+                            <div class="text-violet-400 text-sm font-medium" id="clickUpgradePrice">قیمت: 100 سکه</div>
+                        </div>
+                    </div>
+                    <button id="buyClickUpgrade" class="bg-violet-600 hover:bg-violet-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                        خرید
+                    </button>
+                </div>
+
+                <div class="bg-gray-800 rounded-lg p-4 flex items-center justify-between border border-gray-700">
+                    <div class="flex items-center">
+                        <div class="text-2xl ml-3">🤖</div>
+                        <div>
+                            <div class="font-medium text-white">کلیکر خودکار</div>
+                            <div class="text-xs text-gray-400">1 سکه/ثانیه</div>
+                            <div class="text-violet-400 text-sm font-medium" id="autoClickerPrice">قیمت: 500 سکه</div>
+                        </div>
+                    </div>
+                    <button id="buyAutoClicker" class="bg-violet-600 hover:bg-violet-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                        خرید
+                    </button>
+                </div>
+
+                <div class="bg-gray-800 rounded-lg p-4 flex items-center justify-between border border-gray-700">
+                    <div class="flex items-center">
+                        <div class="text-2xl ml-3">⚡</div>
+                        <div>
+                            <div class="font-medium text-white">توربو اضافی</div>
+                            <div class="text-xs text-gray-400">+3 توربو</div>
+                            <div class="text-violet-400 text-sm font-medium">قیمت: 200 سکه</div>
+                        </div>
+                    </div>
+                    <button id="buyTurbo" class="bg-violet-600 hover:bg-violet-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                        خرید
+                    </button>
+                </div>
+
+                <div class="bg-gray-800 rounded-lg p-4 flex items-center justify-between border border-gray-700">
+                    <div class="flex items-center">
+                        <div class="text-2xl ml-3">💎</div>
+                        <div>
+                            <div class="font-medium text-white">همستر طلایی</div>
+                            <div class="text-xs text-gray-400">درآمد x2</div>
+                            <div class="text-violet-400 text-sm font-medium">قیمت: 2000 سکه</div>
+                        </div>
+                    </div>
+                    <button id="buyGoldenHamster" class="bg-violet-600 hover:bg-violet-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                        خرید
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cards Tab -->
+        <div id="cardsTab" class="tab-content hidden">
+            <h2 class="text-xl font-bold text-center mb-6 text-violet-400">🃏 کارت‌های بازی</h2>
+            
+            <div class="grid grid-cols-2 gap-3">
+                <div class="card-hover bg-gray-800 border border-gray-700 rounded-lg p-4 text-center cursor-pointer" data-card="speed">
+                    <div class="text-3xl mb-2">⚡</div>
+                    <div class="font-medium mb-1 text-white">کارت سرعت</div>
+                    <div class="text-xs text-gray-400">سرعت کلیک x2</div>
+                    <div class="text-violet-400 text-sm mt-2" id="speedCardLevel">سطح: 1</div>
+                </div>
+
+                <div class="card-hover bg-gray-800 border border-gray-700 rounded-lg p-4 text-center cursor-pointer" data-card="power">
+                    <div class="text-3xl mb-2">💪</div>
+                    <div class="font-medium mb-1 text-white">کارت قدرت</div>
+                    <div class="text-xs text-gray-400">قدرت کلیک +5</div>
+                    <div class="text-violet-400 text-sm mt-2" id="powerCardLevel">سطح: 1</div>
+                </div>
+
+                <div class="card-hover bg-gray-800 border border-gray-700 rounded-lg p-4 text-center cursor-pointer" data-card="luck">
+                    <div class="text-3xl mb-2">🍀</div>
+                    <div class="font-medium mb-1 text-white">کارت شانس</div>
+                    <div class="text-xs text-gray-400">شانس سکه مضاعف</div>
+                    <div class="text-violet-400 text-sm mt-2" id="luckCardLevel">سطح: 1</div>
+                </div>
+
+                <div class="card-hover bg-gray-800 border border-gray-700 rounded-lg p-4 text-center cursor-pointer" data-card="turbo">
+                    <div class="text-3xl mb-2">🚀</div>
+                    <div class="font-medium mb-1 text-white">کارت توربو</div>
+                    <div class="text-xs text-gray-400">مدت توربو بیشتر</div>
+                    <div class="text-violet-400 text-sm mt-2" id="turboCardLevel">سطح: 1</div>
+                </div>
+
+                <div class="card-hover bg-gray-800 border border-gray-700 rounded-lg p-4 text-center cursor-pointer" data-card="golden">
+                    <div class="text-3xl mb-2">👑</div>
+                    <div class="font-medium mb-1 text-white">کارت طلایی</div>
+                    <div class="text-xs text-gray-400">همه مزایا</div>
+                    <div class="text-violet-400 text-sm mt-2" id="goldenCardLevel">سطح: 1</div>
+                </div>
+
+                <div class="card-hover bg-gray-800 border border-gray-700 rounded-lg p-4 text-center cursor-pointer" data-card="auto">
+                    <div class="text-3xl mb-2">🔄</div>
+                    <div class="font-medium mb-1 text-white">کارت اتوماتیک</div>
+                    <div class="text-xs text-gray-400">کلیک خودکار قوی‌تر</div>
+                    <div class="text-violet-400 text-sm mt-2" id="autoCardLevel">سطح: 1</div>
+                </div>
+            </div>
+
+            <div class="mt-6 bg-gray-800 border border-gray-700 rounded-lg p-4">
+                <h3 class="font-medium mb-2 text-center text-white">ارتقای کارت انتخابی</h3>
+                <div id="selectedCard" class="text-center text-gray-400 mb-4">کارتی انتخاب نشده</div>
+                <button id="upgradeCard" class="w-full bg-violet-600 hover:bg-violet-700 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    ارتقا (1000 سکه)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <div class="flex justify-around items-center py-3 px-4">
+            <button class="nav-btn flex flex-col items-center p-2 rounded-lg transition-all active bg-violet-600 text-white" data-tab="game">
+                <div class="text-xl mb-1">🎮</div>
+                <div class="text-xs">بازی</div>
+            </button>
+            
+            <button id="turboBtn" class="flex flex-col items-center p-2 rounded-lg transition-all bg-gray-800 border border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                <div class="text-xl mb-1">⚡</div>
+                <div class="text-xs">توربو</div>
+                <div class="text-xs text-violet-400" id="turboCount">5</div>
+            </button>
+            
+            <button id="autoClickBtn" class="flex flex-col items-center p-2 rounded-lg transition-all bg-gray-800 border border-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                <div class="text-xl mb-1">🤖</div>
+                <div class="text-xs">اتوماتیک</div>
+                <div class="text-xs text-violet-400" id="autoClickStatus">غیرفعال</div>
+            </button>
+            
+            <button class="nav-btn flex flex-col items-center p-2 rounded-lg transition-all text-gray-400" data-tab="shop">
+                <div class="text-xl mb-1">🛒</div>
+                <div class="text-xs">فروشگاه</div>
+            </button>
+            
+            <button class="nav-btn flex flex-col items-center p-2 rounded-lg transition-all text-gray-400" data-tab="cards">
+                <div class="text-xl mb-1">🃏</div>
+                <div class="text-xs">کارت‌ها</div>
+            </button>
+        </div>
+    </nav>
+
+    <script>
+        // Game State
+        let gameState = {
+            coins: 0,
+            clickPower: 1,
+            coinsPerSecond: 0,
+            turboCount: 5,
+            turboActive: false,
+            autoClickActive: false,
+            autoClickers: 0,
+            goldenHamster: false,
+            clickUpgradePrice: 100,
+            autoClickerPrice: 500,
+            selectedCard: null,
+            cards: {
+                speed: { level: 1, active: false },
+                power: { level: 1, active: false },
+                luck: { level: 1, active: false },
+                turbo: { level: 1, active: false },
+                golden: { level: 1, active: false },
+                auto: { level: 1, active: false }
+            }
+        };
+
+        // DOM Elements
+        const coinCountEl = document.getElementById('coinCount');
+        const coinsPerSecondEl = document.getElementById('coinsPerSecond');
+        const clickPowerEl = document.getElementById('clickPower');
+        const hamsterEl = document.getElementById('hamster');
+        const floatingCoinsEl = document.getElementById('floatingCoins');
+        const turboCountEl = document.getElementById('turboCount');
+        const autoClickStatusEl = document.getElementById('autoClickStatus');
+
+        // Tab Navigation
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tab = btn.dataset.tab;
+                
+                // Update active nav button
+                document.querySelectorAll('.nav-btn').forEach(b => {
+                    b.classList.remove('active', 'bg-violet-600', 'text-white');
+                    b.classList.add('text-gray-400');
+                });
+                btn.classList.add('active', 'bg-violet-600', 'text-white');
+                btn.classList.remove('text-gray-400');
+                
+                // Show/hide tabs
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+                document.getElementById(tab + 'Tab').classList.remove('hidden');
+            });
+        });
+
+        // Hamster Click
+        hamsterEl.addEventListener('click', (e) => {
+            let coinsEarned = gameState.clickPower;
+            
+            // Apply card bonuses
+            if (gameState.cards.power.active) {
+                coinsEarned += gameState.cards.power.level * 5;
+            }
+            
+            if (gameState.turboActive) {
+                coinsEarned *= 3;
+            }
+            
+            if (gameState.goldenHamster) {
+                coinsEarned *= 2;
+            }
+            
+            // Luck card - chance for double coins
+            if (gameState.cards.luck.active && Math.random() < 0.1 * gameState.cards.luck.level) {
+                coinsEarned *= 2;
+            }
+            
+            gameState.coins += coinsEarned;
+            
+            // Visual effects
+            hamsterEl.classList.add('bounce-click');
+            setTimeout(() => hamsterEl.classList.remove('bounce-click'), 100);
+            
+            createFloatingCoin(e.clientX, e.clientY, coinsEarned);
+            updateDisplay();
+        });
+
+        // Floating coin animation
+        function createFloatingCoin(x, y, amount) {
+            const coin = document.createElement('div');
+            coin.className = 'absolute text-violet-400 font-bold pointer-events-none coin-float';
+            coin.textContent = `+${amount}`;
+            coin.style.left = Math.random() * 100 + 'px';
+            coin.style.top = Math.random() * 100 + 'px';
+            
+            floatingCoinsEl.appendChild(coin);
+            
+            setTimeout(() => {
+                floatingCoinsEl.removeChild(coin);
+            }, 1000);
+        }
+
+        // Turbo Button
+        document.getElementById('turboBtn').addEventListener('click', () => {
+            if (gameState.turboCount > 0 && !gameState.turboActive) {
+                gameState.turboCount--;
+                gameState.turboActive = true;
+                
+                const duration = gameState.cards.turbo.active ? 10000 + (gameState.cards.turbo.level * 2000) : 10000;
+                
+                setTimeout(() => {
+                    gameState.turboActive = false;
+                    updateDisplay();
+                }, duration);
+                
+                updateDisplay();
+            }
+        });
+
+        // Auto Click Button
+        document.getElementById('autoClickBtn').addEventListener('click', () => {
+            if (!gameState.autoClickActive && gameState.autoClickers > 0) {
+                gameState.autoClickActive = true;
+                
+                const autoClickInterval = setInterval(() => {
+                    if (gameState.autoClickActive) {
+                        let autoCoins = gameState.autoClickers;
+                        if (gameState.cards.auto.active) {
+                            autoCoins *= gameState.cards.auto.level;
+                        }
+                        gameState.coins += autoCoins;
+                        updateDisplay();
+                    } else {
+                        clearInterval(autoClickInterval);
+                    }
+                }, 1000);
+                
+                updateDisplay();
+            }
+        });
+
+        // Shop Items
+        document.getElementById('buyClickUpgrade').addEventListener('click', () => {
+            if (gameState.coins >= gameState.clickUpgradePrice) {
+                gameState.coins -= gameState.clickUpgradePrice;
+                gameState.clickPower++;
+                gameState.clickUpgradePrice = Math.floor(gameState.clickUpgradePrice * 1.5);
+                updateDisplay();
+            }
+        });
+
+        document.getElementById('buyAutoClicker').addEventListener('click', () => {
+            if (gameState.coins >= gameState.autoClickerPrice) {
+                gameState.coins -= gameState.autoClickerPrice;
+                gameState.autoClickers++;
+                gameState.coinsPerSecond++;
+                gameState.autoClickerPrice = Math.floor(gameState.autoClickerPrice * 1.8);
+                updateDisplay();
+            }
+        });
+
+        document.getElementById('buyTurbo').addEventListener('click', () => {
+            if (gameState.coins >= 200) {
+                gameState.coins -= 200;
+                gameState.turboCount += 3;
+                updateDisplay();
+            }
+        });
+
+        document.getElementById('buyGoldenHamster').addEventListener('click', () => {
+            if (gameState.coins >= 2000 && !gameState.goldenHamster) {
+                gameState.coins -= 2000;
+                gameState.goldenHamster = true;
+                hamsterEl.textContent = '🐹✨';
+                updateDisplay();
+            }
+        });
+
+        // Card Selection
+        document.querySelectorAll('[data-card]').forEach(card => {
+            card.addEventListener('click', () => {
+                const cardType = card.dataset.card;
+                gameState.selectedCard = cardType;
+                
+                // Visual feedback
+                document.querySelectorAll('[data-card]').forEach(c => c.classList.remove('ring-2', 'ring-yellow-400'));
+                card.classList.add('ring-2', 'ring-yellow-400');
+                
+                document.getElementById('selectedCard').textContent = card.querySelector('.font-bold').textContent;
+                document.getElementById('upgradeCard').disabled = false;
+            });
+        });
+
+        // Card Upgrade
+        document.getElementById('upgradeCard').addEventListener('click', () => {
+            if (gameState.selectedCard && gameState.coins >= 1000) {
+                gameState.coins -= 1000;
+                gameState.cards[gameState.selectedCard].level++;
+                gameState.cards[gameState.selectedCard].active = true;
+                
+                // Update card level display
+                document.getElementById(gameState.selectedCard + 'CardLevel').textContent = 
+                    `سطح: ${gameState.cards[gameState.selectedCard].level}`;
+                
+                updateDisplay();
+            }
+        });
+
+        // Auto income from auto clickers
+        setInterval(() => {
+            if (gameState.autoClickers > 0) {
+                let autoIncome = gameState.autoClickers;
+                if (gameState.cards.auto.active) {
+                    autoIncome *= gameState.cards.auto.level;
+                }
+                if (gameState.goldenHamster) {
+                    autoIncome *= 2;
+                }
+                gameState.coins += autoIncome;
+                updateDisplay();
+            }
+        }, 1000);
+
+        // Update Display
+        function updateDisplay() {
+            coinCountEl.textContent = Math.floor(gameState.coins).toLocaleString();
+            coinsPerSecondEl.textContent = `${gameState.coinsPerSecond} سکه/ثانیه`;
+            clickPowerEl.textContent = `قدرت کلیک: ${gameState.clickPower}`;
+            turboCountEl.textContent = `${gameState.turboCount} باقی‌مانده`;
+            autoClickStatusEl.textContent = gameState.autoClickActive ? 'فعال' : 'غیرفعال';
+            
+            // Update shop prices
+            document.getElementById('clickUpgradePrice').textContent = `قیمت: ${gameState.clickUpgradePrice} سکه`;
+            document.getElementById('autoClickerPrice').textContent = `قیمت: ${gameState.autoClickerPrice} سکه`;
+            
+            // Update button states
+            document.getElementById('turboBtn').disabled = gameState.turboCount === 0 || gameState.turboActive;
+            document.getElementById('buyClickUpgrade').disabled = gameState.coins < gameState.clickUpgradePrice;
+            document.getElementById('buyAutoClicker').disabled = gameState.coins < gameState.autoClickerPrice;
+            document.getElementById('buyTurbo').disabled = gameState.coins < 200;
+            document.getElementById('buyGoldenHamster').disabled = gameState.coins < 2000 || gameState.goldenHamster;
+        }
+
+        // Initialize
+        updateDisplay();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9920d25782b79dc3',t:'MTc2MTA1MDQwOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
